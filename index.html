@@ -64,7 +64,9 @@
     padding:15px 46px; border-radius:100px; box-shadow:0 12px 30px rgba(201,99,111,.45); transition:transform .1s;}
   .yes:active{transform:translateY(1px);}
   .no{background:transparent; color:#c9b9c6; border:1px solid var(--line);
-    font-size:16px; padding:14px 30px; border-radius:100px;}
+    font-size:16px; padding:14px 30px; border-radius:100px;
+    transition:transform .45s cubic-bezier(.5,-0.4,.5,1.4), opacity .45s ease;}
+  .no.poof{transform:scale(0) rotate(200deg); opacity:0; pointer-events:none;}
   .yay{display:none; margin-top:20px;}
   .yay.show{display:block; animation:fade .7s ease;}
   @keyframes fade{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
@@ -156,8 +158,8 @@
   <section class="ask reveal">
     <h2>سامحتيني؟</h2>
     <div class="btns2">
-      <button class="yes" type="button" onclick="forgive()">سامحتك</button>
-      <button class="no" type="button" onclick="openReally()">لا</button>
+      <button class="yes" type="button" onclick="onYes()">سامحتك</button>
+      <button class="no" type="button" onclick="onNo(this)">لا</button>
     </div>
     <div class="yay" id="yay"><p class="msg">أحبّج يا سمسمتي 🤍</p></div>
   </section>
@@ -165,28 +167,28 @@
   <footer>لسمسمتي 🤍</footer>
 </div>
 
-<!-- full-screen popup -->
-<div class="overlay" id="really" onclick="closeReally(event)">
-  <button class="ovclose" type="button" onclick="closeReally(event)" aria-label="إغلاق">×</button>
-  <video id="reallyVid" class="ovvid" playsinline controls>
-    <source src="really.mp4" type="video/mp4">
-  </video>
+<!-- full-screen popup (reused for both reactions) -->
+<div class="overlay" id="pop" onclick="closePop(event)">
+  <button class="ovclose" type="button" onclick="closePop(event)" aria-label="إغلاق">×</button>
+  <video id="popVid" class="ovvid" playsinline controls></video>
 </div>
 
 <script>
   const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.14});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-  function openReally(){
-    const o=document.getElementById('really'), v=document.getElementById('reallyVid');
-    o.classList.add('show');
+  function openPopup(src){
+    const o=document.getElementById('pop'), v=document.getElementById('popVid');
+    v.src=src; o.classList.add('show');
     try{ v.currentTime=0; v.muted=false; v.play(); }catch(e){}
   }
-  function closeReally(e){
-    if(e){ const t=e.target; if(!(t.id==='really' || t.classList.contains('ovclose'))) return; }
-    const o=document.getElementById('really'), v=document.getElementById('reallyVid');
+  function closePop(e){
+    if(e){ const t=e.target; if(!(t.id==='pop' || t.classList.contains('ovclose'))) return; }
+    const o=document.getElementById('pop'), v=document.getElementById('popVid');
     o.classList.remove('show'); try{ v.pause(); }catch(e){}
   }
+  function onNo(btn){ btn.classList.add('poof'); setTimeout(()=>{ btn.style.display='none'; },450); openPopup('nono.mp4'); }
+  function onYes(){ forgive(); openPopup('really.mp4'); }
 
   function forgive(){
     document.getElementById('yay').classList.add('show');
